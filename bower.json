@@ -1,6 +1,7 @@
 {
   "name": "polymerbb",
   "description": "BlueBridge Polymer Web Components",
+  "version": "0.1.0",
   "main": "polymerbb.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0"
