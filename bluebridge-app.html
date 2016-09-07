@@ -1,0 +1,41 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="bluebridge.html">
+
+<!--
+`bluebridge-app`
+Connects to a BlueBridge instance and provides helper methods to other BlueBridge components
+-->
+<dom-module id="bluebridge-app">
+  <template>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'bluebridge-app',
+
+      properties: {
+        endpoint: {
+          type: String,
+          value: null
+        },
+
+        app: {
+          type: Object,
+          notify: true,
+          computed: '__computeApp(endpoint)'
+        }
+      },
+
+      __computeApp: function (endpoint) {
+        if (window.bluebridge) {
+          window.bluebridge.destroy();
+        }
+        window.bluebridge = new BlueBridge(endpoint);
+        return window.bluebridge;
+      }
+
+    });
+  </script>
+</dom-module>

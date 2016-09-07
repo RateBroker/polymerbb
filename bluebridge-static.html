@@ -1,0 +1,33 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="bluebridge.html">
+
+<!--
+`bluebridge-static`
+Maps a static from the BlueBridge instance to a Polmer Web Component
+-->
+<dom-module id="bluebridge-static">
+  <template>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'bluebridge-static',
+
+      properties: {
+        collection: String,
+        name: String
+      },
+
+      ready: function () {
+        this.fn = BlueBridge.static(this.collection, this.name);
+      },
+
+      call: function () {
+        return this.fn.apply(this.fn, arguments);
+      }
+
+    });
+  </script>
+</dom-module>

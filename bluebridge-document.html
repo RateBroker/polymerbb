@@ -1,0 +1,170 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="bluebridge.html">
+
+<!--
+`bluebridge-document`
+Fetches a document from the BlueBridge instance, receives update and remove events
+-->
+<dom-module id="bluebridge-document">
+  <template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'bluebridge-document',
+
+      properties: {
+        collection: {
+          type: String,
+          observer: '_collectionChanged',
+        },
+        doc_id: {
+          type: String,
+          value: '',
+          observer: '_idChanged',
+          reflectToAttribute: true,
+        },
+        document: {
+          type: Object,
+          notify: true,
+          observer: '_documentChanged',
+          value: {}
+        },
+        loading: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          readOnly: true,
+        },
+        loaded: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          readOnly: true,
+        },
+        validating: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          readOnly: true,
+        },
+        vaild: {
+          type: Boolean,
+          reflectToAttribute: true,
+          readOnly: true,
+        },
+        invalid: {
+          type: Boolean,
+          reflectToAttribute: true,
+          readOnly: true,
+        },
+        errors: {
+          type: Array,
+          value: [],
+        },
+        autoSave: {
+          type: Boolean,
+          value: true,
+          notify: true,
+        },
+        saving: {
+          type: Boolean,
+          reflectToAttribute: true,
+          readOnly: true,
+        },
+        saved: {
+          type: Boolean,
+          reflectToAttribute: true,
+          readOnly: true,
+        }
+      },
+
+      _collectionChanged: function (collection) {
+        this.reload();
+      },
+      _idChanged: function (id, oldId) {
+        if (!this.document) {
+          this.reload();
+          return;
+        }
+        if (id != this.document._id) {
+          this.reload();
+          return;
+        }
+      },
+      _documentChanged: function (data) {
+        if (data) {
+          if (data._id && this.doc_id !== data._id) {
+            this.doc_id = data._id;
+            return;
+          }
+          if (this.autoSave) {
+            this.save();
+          }
+        }
+      },
+
+      reload: function () {
+        if (!this.collection) {
+          return;
+        }
+        this.loading = true;
+        window.bluebridge
+          .document(this.collection, this.doc_id)
+          .then(document => {
+            this.replace(document);
+            this.loading = false;
+            this.loaded = true;
+            this._documentChanged(this.document);
+          });
+      },
+
+      replace: function (data) {
+        for (var i in this.document) {
+          delete this.document[i];
+        }
+        for (var i in data) {
+          this.document[i] = data[i];
+        }
+      },
+
+      validate: function () {
+        this.validating = true;
+        return window.bluebridge
+          .validateDocument(this.collection, this.doc_id, this.document)
+          .then(errors => {
+            this.validating = false;
+            if (errors) {
+              this.valid = false;
+              this.invalid = true;
+              this.errors = errors;
+            } else {
+              this.valid = true;
+              this.invalid = false;
+              this.errors = [];
+            }
+            return Promise.resolve(this.valid);
+          });
+      },
+      save: function () {
+        this.saving = true;
+        this.saved = false;
+        return this.validate()
+          .then(valid => {
+            if (!valid) {
+              this.saving = false;
+              return Promise.resolve(false);
+            }
+            return window.bluebridge
+              .saveDocument(this.collection, this.doc_id, this.document)
+              .then(savedDocument => {
+                this.saving = false;
+                this.saved = true;
+                return Promise.resolve(true);
+              });
+          });
+      }
+    });
+  </script>
+</dom-module>
