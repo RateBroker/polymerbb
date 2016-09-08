@@ -1,5 +1,3 @@
 bower_components
 node_modules
 jspm_packages
-
-bluebridge-bundled.js*
