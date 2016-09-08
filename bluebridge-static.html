@@ -1,10 +1,17 @@
-<link rel="import" href="../polymer/polymer.html">
-
-<link rel="import" href="bluebridge.html">
-
 <!--
 `bluebridge-static`
-Maps a static from the BlueBridge instance to a Polmer Web Component
+Maps a path function from from bluebridge, will automatically call function when args change
+
+e.g.
+
+    <bluebridge-static
+      collection="Calculator"
+      name="add"
+      args="[ 1, 2, {{num}} ]"
+      result="{{sum}}"
+      ></bluebridge-call>
+    <paper-input value="{{num}}" type="number"></paper-item>
+    <p>{{sum}}</p>
 -->
 <dom-module id="bluebridge-static">
   <template>
@@ -16,16 +23,54 @@ Maps a static from the BlueBridge instance to a Polmer Web Component
       is: 'bluebridge-static',
 
       properties: {
-        collection: String,
-        name: String
+
+        collection: {
+          type: String,
+          notify: true,
+        },
+        name: {
+          type: String,
+          notify: true,
+        },
+        call: {
+          type: Function,
+          computed: 'computeFn(collection, name)',
+          observer: 'callChanged',
+        },
+        args: {
+          type: Array,
+          value: undefined,
+          observer: 'argsChanged',
+        },
+        result: {
+          type: Object,
+          observer: 'resultChanged',
+        },
       },
 
-      ready: function () {
-        this.fn = BlueBridge.static(this.collection, this.name);
+      computeFn: function (collection, name) {
+        let path  = [collection, 'static', name].join('.');
+        let fn    = bluebridge.rpc(path);
+        return function () {
+          return fn.apply(fn, arguments)
+            .then(function (result) {
+              this.replace(result);
+              return Promise.resolve(this.result);
+            });
+        };
       },
 
-      call: function () {
-        return this.fn.apply(this.fn, arguments);
+      argsChanged: function (args) {
+        this.call.apply(this.call, args);
+      },
+
+      replace: function (result) {
+        for (var i in this.result) {
+          delete this.result[i];
+        }
+        for (var i in result) {
+          this.result[i] = result[i];
+        }
       }
 
     });

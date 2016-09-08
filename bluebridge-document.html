@@ -1,7 +1,3 @@
-<link rel="import" href="../polymer/polymer.html">
-
-<link rel="import" href="bluebridge.html">
-
 <!--
 `bluebridge-document`
 Fetches a document from the BlueBridge instance, receives update and remove events
@@ -49,7 +45,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           reflectToAttribute: true,
           readOnly: true,
         },
-        vaild: {
+        valid: {
           type: Boolean,
           reflectToAttribute: true,
           readOnly: true,
@@ -93,6 +89,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           return;
         }
       },
+
       _documentChanged: function (data) {
         if (data) {
           if (data._id && this.docId !== data._id) {
@@ -106,17 +103,18 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       },
 
       reload: function () {
+        let self = this;
         if (!this.collection) {
           return;
         }
         this.loading = true;
-        window.bluebridge
+        bluebridge
           .document(this.collection, this.docId)
-          .then(document => {
-            this.replace(document);
-            this.loading = false;
-            this.loaded = true;
-            this._documentChanged(this.document);
+          .then(function (doc) {
+            self.replace(doc);
+            self.loading = false;
+            self.loaded = true;
+            self._documentChanged(this.document);
           });
       },
 
@@ -130,41 +128,43 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       },
 
       validate: function () {
+        let self = this;
         this.validating = true;
-        return window.bluebridge
-          .validateDocument(this.collection, this.docId, this.document)
-          .then(errors => {
-            this.validating = false;
-            if (errors) {
-              this.valid = false;
-              this.invalid = true;
-              this.errors = errors;
-            } else {
-              this.valid = true;
-              this.invalid = false;
-              this.errors = [];
-            }
-            return Promise.resolve(this.valid);
-          });
+        return bluebridge.validateDocument(this.collection, this.docId, this.document)
+        .then(function (errors) {
+          self.validating = false;
+          if (errors) {
+            self.valid = false;
+            self.invalid = true;
+            self.errors = errors;
+          } else {
+            self.valid = true;
+            self.invalid = false;
+            self.errors = [];
+          }
+          return Promise.resolve(self.valid);
+        });
       },
 
       save: function () {
+        let self = this;
         this.saving = true;
         this.saved = false;
         return this.validate()
-          .then(valid => {
-            if (!valid) {
-              this.saving = false;
-              return Promise.resolve(false);
-            }
-            return window.bluebridge
-              .saveDocument(this.collection, this.docId, this.document)
-              .then(savedDocument => {
-                this.saving = false;
-                this.saved = true;
-                return Promise.resolve(true);
-              });
+        .then(function (valid) {
+          // If not valid return early
+          if (!valid) {
+            self.saving = false;
+            return Promise.resolve(false);
+          }
+          // Save
+          return bluebridge.saveDocument(self.collection, self.docId, self.document)
+          .then(function (savedDocument) {
+            self.saving = false;
+            self.saved = true;
+            return Promise.resolve(true);
           });
+        });
       }
     });
   </script>

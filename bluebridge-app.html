@@ -1,10 +1,12 @@
-<link rel="import" href="../polymer/polymer.html">
-
-<link rel="import" href="bluebridge.html">
-
 <!--
 `bluebridge-app`
-Connects to a BlueBridge instance and provides helper methods to other BlueBridge components
+`<bluebridge-app>` connects to a BlueBridge instance which provides helper methods to other BlueBridge components
+
+e.g.
+
+    <bluebridge-app
+      endpoint="http://localhost:8173"
+      app="{{bluebridge}}"></bluebridge>
 -->
 <dom-module id="bluebridge-app">
   <template>
@@ -23,7 +25,6 @@ Connects to a BlueBridge instance and provides helper methods to other BlueBridg
 
         app: {
           type: Object,
-          notify: true,
           computed: '__computeApp(endpoint)'
         }
       },
