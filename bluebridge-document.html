@@ -19,7 +19,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           type: String,
           observer: '_collectionChanged',
         },
-        doc_id: {
+        docId: {
           type: String,
           value: '',
           observer: '_idChanged',
@@ -83,20 +83,20 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       _collectionChanged: function (collection) {
         this.reload();
       },
-      _idChanged: function (id, oldId) {
+      _idChanged: function (docId, oldDocId) {
         if (!this.document) {
           this.reload();
           return;
         }
-        if (id != this.document._id) {
+        if (docId != this.document._id) {
           this.reload();
           return;
         }
       },
       _documentChanged: function (data) {
         if (data) {
-          if (data._id && this.doc_id !== data._id) {
-            this.doc_id = data._id;
+          if (data._id && this.docId !== data._id) {
+            this.docId = data._id;
             return;
           }
           if (this.autoSave) {
@@ -111,7 +111,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         }
         this.loading = true;
         window.bluebridge
-          .document(this.collection, this.doc_id)
+          .document(this.collection, this.docId)
           .then(document => {
             this.replace(document);
             this.loading = false;
@@ -132,7 +132,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       validate: function () {
         this.validating = true;
         return window.bluebridge
-          .validateDocument(this.collection, this.doc_id, this.document)
+          .validateDocument(this.collection, this.docId, this.document)
           .then(errors => {
             this.validating = false;
             if (errors) {
@@ -147,6 +147,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
             return Promise.resolve(this.valid);
           });
       },
+
       save: function () {
         this.saving = true;
         this.saved = false;
@@ -157,7 +158,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
               return Promise.resolve(false);
             }
             return window.bluebridge
-              .saveDocument(this.collection, this.doc_id, this.document)
+              .saveDocument(this.collection, this.docId, this.document)
               .then(savedDocument => {
                 this.saving = false;
                 this.saved = true;
