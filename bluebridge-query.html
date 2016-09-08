@@ -3,8 +3,8 @@
 <link rel="import" href="bluebridge.html">
 
 <!--
-`bluebridge-document`
-Fetches an array of documents from the BlueBridge instance, receives update, add & remove events
+`bluebridge-query`
+Fetches an array of document ids from the BlueBridge instance
 -->
 <dom-module id="bluebridge-query">
   <template>
@@ -16,9 +16,55 @@ Fetches an array of documents from the BlueBridge instance, receives update, add
       is: 'bluebridge-query',
 
       properties: {
-        collection: String,
-        query: Object,
-        results: Array
+        collection: {
+          type: String,
+          observer: '_collectionChanged',
+        },
+        query: {
+          type: Object,
+          observer: '_queryChanged',
+          notify: true,
+        },
+        results: {
+          type: Array,
+          observer: '_resultsChanged',
+          notify: true,
+          value: [],
+        },
+        loading: {
+          type: Boolean,
+        },
+      },
+
+      _collectionChanged: function (collection) {
+        this.reload();
+      },
+
+      _queryChanged: function (query) {
+        this.reload();
+      },
+
+      _idsChanged: function (ids) {
+        // console.log(ids);
+      },
+
+      _resultsChanged: function (results) {
+        // console.log(results);
+      },
+
+      reload: function () {
+        if (!this.collection) {
+          return;
+        }
+        this.loading = true;
+        this.loaded = false;
+        window.bluebridge
+          .query(this.collection, this.query)
+          .then(results => {
+            this.results = results;
+            this.loading = false;
+            this.loaded = true;
+          });
       },
 
     });
