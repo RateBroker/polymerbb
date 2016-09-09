@@ -31,29 +31,26 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           type: Boolean,
           value: false,
           reflectToAttribute: true,
-          readOnly: true,
         },
         loaded: {
           type: Boolean,
           value: false,
           reflectToAttribute: true,
-          readOnly: true,
         },
         validating: {
           type: Boolean,
           value: false,
           reflectToAttribute: true,
-          readOnly: true,
         },
         valid: {
           type: Boolean,
+          value: false,
           reflectToAttribute: true,
-          readOnly: true,
         },
         invalid: {
           type: Boolean,
+          value: false,
           reflectToAttribute: true,
-          readOnly: true,
         },
         errors: {
           type: Array,
@@ -61,18 +58,18 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         },
         autoSave: {
           type: Boolean,
-          value: true,
+          value: false,
           notify: true,
         },
         saving: {
           type: Boolean,
+          value: false,
           reflectToAttribute: true,
-          readOnly: true,
         },
         saved: {
           type: Boolean,
+          value: false,
           reflectToAttribute: true,
-          readOnly: true,
         }
       },
 
