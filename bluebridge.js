@@ -7,25 +7,35 @@ const rpcClient = require('socket.io-rpc-client');
  */
 class BlueBridge {
 
-  constructor (endpoint) {
-    this.rpc = rpcClient(endpoint);
+  constructor (endpoint, authToken) {
   }
 
   query (collection, qry) {
     return this.rpc(collection + '.query')(qry);
   }
 
-  document (collection, documentId) {
-    return this.rpc(collection + '.document')(documentId)
+  document (collection, documentId, isNew) {
+    return this.rpc(collection + '.document')(documentId, isNew)
   }
 
-  saveDocument (collection, documentId, data) {
-    return this.rpc(collection + '.saveDocument')(documentId, data);
+  save (collection, documentId, data) {
+    return this.rpc(collection + '.save')(documentId, data);
   }
 
-  validateDocument (collection, documentId, data) {
-    return this.rpc(collection + '.validateDocument')(documentId, data);
+  validate (collection, documentId, data) {
+    return this.rpc(collection + '.validate')(documentId, data);
+  }
+
+  initialize (data) {
+    if (this.rpc) {
+
+    }
+    this.rpc = rpcClient(data.endpoint, data.authToken);
+  }
+
+  destroy () {
+    this.rpc.destroy();
   }
 }
 
-window.BlueBridge = BlueBridge;
+window.bluebridge = new BlueBridge();
