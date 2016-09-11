@@ -21,10 +21,10 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           observer: '_idChanged',
           reflectToAttribute: true,
         },
-        document: {
+        data: {
           type: Object,
           notify: true,
-          observer: '_documentChanged',
+          observer: '_dataChanged',
           value: {}
         },
         loading: {
@@ -77,91 +77,88 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         this.reload();
       },
       _idChanged: function (docId, oldDocId) {
-        if (!this.document) {
+        if (!this.data) {
           this.reload();
           return;
         }
-        if (docId != this.document._id) {
+        if (docId != this.data._id) {
           this.reload();
           return;
         }
       },
-
-      _documentChanged: function (data) {
-        if (data) {
-          if (data._id && this.docId !== data._id) {
-            this.docId = data._id;
-            return;
-          }
-          if (this.autoSave) {
-            this.save();
-          }
+      _dataChanged: function (data) {
+        if (this.autoSave) {
+          return this.save();
         }
+        if (data._id && this.docId !== data._id) {
+          this.docId = data._id;
+          return;
+        }
+        return Promise.resolve();
       },
 
       reload: function () {
         let self = this;
-        if (!this.collection) {
-          return;
-        }
+
+        if (!this.collection) { return; }
+
+        this.isNew = !this.docId;
         this.loading = true;
-        bluebridge
-          .document(this.collection, this.docId)
+        return bluebridge.document(this.collection, this.docId, this.isNew)
           .then(function (doc) {
             self.replace(doc);
             self.loading = false;
             self.loaded = true;
-            self._documentChanged(this.document);
-          });
+            return self._dataChanged(this.data);
+          })
+          .then(true);
       },
 
       replace: function (data) {
-        for (var i in this.document) {
-          delete this.document[i];
+        for (var i in this.data) {
+          delete this.data[i];
         }
         for (var i in data) {
-          this.document[i] = data[i];
+          this.data[i] = data[i];
         }
+        return Promise.resolve(this.data);
+      },
+
+      save: function () {
+        let self = this;
+
+        this.saving = true;
+        this.saved = false;
+
+        return this.validate()
+          .then(() => {
+            return bluebridge.save(self.collection, self.docId, self.data);
+          })
+          .then(data => {
+            self.saving = false;
+            self.saved = true;
+            return this.replace(data);
+          });
       },
 
       validate: function () {
         let self = this;
         this.validating = true;
-        return bluebridge.validateDocument(this.collection, this.docId, this.document)
-        .then(function (errors) {
-          self.validating = false;
-          if (errors) {
-            self.valid = false;
-            self.invalid = true;
-            self.errors = errors;
-          } else {
-            self.valid = true;
-            self.invalid = false;
-            self.errors = [];
-          }
-          return Promise.resolve(self.valid);
-        });
-      },
-
-      save: function () {
-        let self = this;
-        this.saving = true;
-        this.saved = false;
-        return this.validate()
-        .then(function (valid) {
-          // If not valid return early
-          if (!valid) {
-            self.saving = false;
-            return Promise.resolve(false);
-          }
-          // Save
-          return bluebridge.saveDocument(self.collection, self.docId, self.document)
-          .then(function (savedDocument) {
-            self.saving = false;
-            self.saved = true;
-            return Promise.resolve(true);
+        return bluebridge.validate(this.collection, this.docId, this.data)
+          .then(function (errors) {
+            self.validating = false;
+            if (errors) {
+              self.valid = false;
+              self.invalid = true;
+              self.errors = errors;
+              return Promise.reject(errors);
+            } else {
+              self.valid = true;
+              self.invalid = false;
+              self.errors = [];
+              return Promise.resolve();
+            }
           });
-        });
       }
     });
   </script>
