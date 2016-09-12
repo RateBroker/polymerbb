@@ -102,9 +102,14 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         if (!this.collection) { return; }
 
-        this.isNew = !this.docId;
+        this.isNew = !this.docId; // TODO: This should be a local variable?
         this.loading = true;
-        return bluebridge.document(this.collection, this.docId, this.isNew)
+        
+        var documentPromise = this.isNew ? 
+          bluebridge.newDocument(this.collection) : 
+          bluebridge.document(this.collection, this.docId);
+
+        return documentPromise
           .then(function (doc) {
             self.replace(doc);
             self.loading = false;
