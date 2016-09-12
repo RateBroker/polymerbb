@@ -109,7 +109,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
             self.replace(doc);
             self.loading = false;
             self.loaded = true;
-            return self._dataChanged(this.data);
+            return self._dataChanged(self.data);
           })
           .then(true);
       },
