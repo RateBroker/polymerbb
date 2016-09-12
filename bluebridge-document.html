@@ -106,7 +106,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         this.loading = true;
         
         var documentPromise = this.isNew ? 
-          bluebridge.newDocument(this.collection) : 
+          bluebridge.create(this.collection) : 
           bluebridge.document(this.collection, this.docId);
 
         return documentPromise

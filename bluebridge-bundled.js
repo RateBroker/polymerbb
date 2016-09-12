@@ -6137,8 +6137,12 @@ $__System.registerDynamic('1', ['19'], true, function ($__require, exports, modu
       return this.rpc(collection + '.query')(qry);
     }
 
-    document(collection, documentId, isNew) {
-      return this.rpc(collection + '.document')(documentId, isNew);
+    create(collection) {
+      return this.rpc(collection + '.create')();
+    }
+
+    document(collection, documentId) {
+      return this.rpc(collection + '.document')(documentId);
     }
 
     save(collection, documentId, data) {
