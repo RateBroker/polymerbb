@@ -131,12 +131,11 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         this.saved = false;
 
         return this.validate()
-          .then(() => {
-            return bluebridge.save(self.collection, self.docId, self.data);
-          })
+          .then(() => bluebridge.save(self.collection, self.docId, self.data))
           .then(data => {
             self.saving = false;
             self.saved = true;
+            self.docId = data._id;
             return this.replace(data);
           });
       },
