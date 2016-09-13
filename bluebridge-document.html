@@ -117,11 +117,10 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           bluebridge.document(this.collection, this.docId);
 
         return documentPromise
-          .then(function (doc) {
-            self.replace(doc);
+          .then((data) => {
             self.loading = false;
             self.loaded = true;
-            return self._dataChanged(self.data);
+            this.set('data', data);
           })
           .then(true);
       },
@@ -148,7 +147,8 @@ Fetches a document from the BlueBridge instance, receives update and remove even
             self.saving = false;
             self.saved = true;
             self.docId = data._id;
-            return this.replace(data);
+            this.set('data', data);
+            return this.data;
           });
       },
 

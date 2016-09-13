@@ -23,7 +23,6 @@ Fetches an array of document ids from the BlueBridge instance
         },
         results: {
           type: Array,
-          observer: '_resultsChanged',
           notify: true,
           value: [],
         },
@@ -47,14 +46,6 @@ Fetches an array of document ids from the BlueBridge instance
         this.reload();
       },
 
-      _idsChanged: function (ids) {
-        // console.log(ids);
-      },
-
-      _resultsChanged: function (results) {
-        // console.log(results);
-      },
-
       reload: function () {
         if (!this.collection) {
           return;
@@ -64,9 +55,9 @@ Fetches an array of document ids from the BlueBridge instance
         bluebridge
           .query(this.collection, this.query)
           .then((results) => {
-            this.results = results;
             this.loading = false;
             this.loaded = true;
+            this.set('results', results);
           });
       },
 
