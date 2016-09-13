@@ -33,15 +33,16 @@ class BlueBridge {
     return this.rpc(collection + '.validate')(documentId, data);
   }
 
-  initialize (data) {
-    if (this.rpc) {
-
-    }
-    this.rpc = rpcClient(data.endpoint, data.authToken);
+  method (collection, documentId, methodName) {
+    return this.rpc(collection + '.methods.' + methodName).bind(this.rpc, documentId);
   }
 
-  destroy () {
-    this.rpc.destroy();
+  static (collection, staticName) {
+    return this.rpc(collection + '.statics.' + staticName);
+  }
+
+  initialize (data) {
+    this.rpc = rpcClient(data.endpoint, data.authToken);
   }
 }
 

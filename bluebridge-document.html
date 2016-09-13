@@ -170,6 +170,14 @@ Fetches a document from the BlueBridge instance, receives update and remove even
               return Promise.resolve();
             }
           });
+      },
+
+      method: function (methodName) {
+        return bluebridge.method(this.collection, this.docId, methodName);
+      },
+
+      static: function (staticName) {
+        return bluebridge.static(this.collection, staticName);
       }
     });
   </script>

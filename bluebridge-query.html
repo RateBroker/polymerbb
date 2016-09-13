@@ -60,6 +60,10 @@ Fetches an array of document ids from the BlueBridge instance
           });
       },
 
+      static: function (staticName) {
+        return bluebridge.static(this.collection, staticName);
+      },
+
     });
   </script>
 </dom-module>
