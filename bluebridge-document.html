@@ -97,7 +97,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         if (this.autoSave) {
           return this.save();
         }
-        if (data._id && this.docId !== data._id) {
+        if (data && data._id && this.docId !== data._id) {
           this.docId = data._id;
           return;
         }
