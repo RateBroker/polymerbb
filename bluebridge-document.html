@@ -73,6 +73,13 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         }
       },
 
+      ready: function () {
+        bluebridge.rpc.socket.on('connect',     this.reload.bind(this));
+        bluebridge.rpc.socket.on('auth',        this.reload.bind(this));
+        bluebridge.rpc.socket.on('deauth',      this.reload.bind(this));
+        bluebridge.rpc.socket.on('disconnect',  this.reload.bind(this));
+      },
+
       _collectionChanged: function (collection) {
         this.reload();
       },
@@ -104,9 +111,9 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         this.isNew = !this.docId; // TODO: This should be a local variable?
         this.loading = true;
-        
-        var documentPromise = this.isNew ? 
-          bluebridge.create(this.collection) : 
+
+        var documentPromise = this.isNew ?
+          bluebridge.create(this.collection) :
           bluebridge.document(this.collection, this.docId);
 
         return documentPromise

@@ -6131,7 +6131,11 @@ $__System.registerDynamic('1', ['19'], true, function ($__require, exports, modu
    */
   class BlueBridge {
 
-    constructor(endpoint, authToken) {}
+    constructor() {}
+
+    auth(type, opts) {
+      return this.rpc('auth.' + type)(opts);
+    }
 
     query(collection, qry) {
       return this.rpc(collection + '.query')(qry);

@@ -21,23 +21,23 @@ e.g.
         endpoint: {
           type: String
         },
-        firebaseUser: {
-          type: Object,
-          notify: true,
-          observer: 'firebaseUserChanged',
-        },
         firebaseStatusKnown: {
           type: Object,
           notify: true,
           observer: 'firebaseStatusKnownChanged',
         },
-        authToken: {
-          type: String,
-          value: null,
+        firebaseUser: {
+          type: Object,
+          notify: true,
+          observer: 'firebaseUserChanged',
         },
         bluebridgeApp: {
           type: Object,
-          computed: 'initializeBlueBridgeApp(endpoint, authToken)',
+          computed: 'initializeBlueBridgeApp(endpoint)',
+        },
+        firebaseToken: {
+          type: String,
+          observer: 'firebaseTokenChanged',
         },
       },
 
@@ -47,53 +47,48 @@ e.g.
       },
 
       firebaseStatusKnownChanged: function (statusKnown) {
-        this.computeAuthToken();
+        this.getFirebaseToken();
       },
 
       firebaseUserChanged: function (user) {
-        this.computeAuthToken();
+        this.getFirebaseToken();
       },
 
-      initializeBlueBridgeApp: function (endpoint, authToken) {
-        bluebridge.initialize({
-          endpoint: endpoint,
-          authToken: authToken
-        });
+      firebaseTokenChanged: function (firebaseToken) {
+        if (!bluebridge) {
+          return;
+        }
+        bluebridge.auth('firebase', firebaseToken);
+      },
+
+      handleResponse: function (res){
+        console.log(res);
+      },
+
+      initializeBlueBridgeApp: function (endpoint) {
+        bluebridge.initialize({ endpoint: endpoint });
         return bluebridge;
       },
 
-      computeAuthToken: function () {
+      getFirebaseToken: function () {
         if (!this.firebaseStatusKnown) {
           return;
         }
 
         if (!firebase.auth().currentUser) {
-          this.authToken = null;
+          this.firebaseToken = null;
           return;
         }
 
         firebase.auth().currentUser
           .getToken(true)
           .then((token) => {
-            console.log(token);
-            this.authToken = token;
+            this.firebaseToken = token;
           });
       },
 
-      // statusKnownChanged: function () {
-      //   this.computeToken();
-      // },
-      //
-      // userChanged: function (user) {
-      //   this.computeToken();
-      // },
-
-      computeToken: function () {
-        firebase.auth().currentUser
-          .getToken(true)
-          .then((idToken) => {
-            this.authToken = idToken;
-          });
+      computeAuthEndpoint: function (endpoint) {
+        return endpoint + '/auth/firebase_token';
       },
 
     });

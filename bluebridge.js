@@ -7,7 +7,10 @@ const rpcClient = require('socket.io-rpc-client');
  */
 class BlueBridge {
 
-  constructor (endpoint, authToken) {
+  constructor () { }
+
+  auth (type, opts) {
+    return this.rpc('auth.' + type)(opts);
   }
 
   query (collection, qry) {

@@ -32,6 +32,13 @@ Fetches an array of document ids from the BlueBridge instance
         },
       },
 
+      ready: function () {
+        bluebridge.rpc.socket.on('connect',     this.reload.bind(this));
+        bluebridge.rpc.socket.on('auth',        this.reload.bind(this));
+        bluebridge.rpc.socket.on('deauth',      this.reload.bind(this));
+        bluebridge.rpc.socket.on('disconnect',  this.reload.bind(this));
+      },
+
       _collectionChanged: function (collection) {
         this.reload();
       },
