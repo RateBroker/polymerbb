@@ -98,7 +98,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           return this.save();
         }
         if (data && data._id && this.docId !== data._id) {
-          this.docId = data._id;
+          this.set('docId', data._id);
           return;
         }
         return Promise.resolve();
