@@ -73,7 +73,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         },
         isNew: {
           type: Boolean,
-          computed: '_computeIsNew(docId)'
+          computed: '_computeIsNew(data.isNew)'
         },
       },
 
@@ -107,8 +107,13 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         }
         return Promise.resolve();
       },
-      _computeIsNew: function (docId) {
-        return docId === null;
+      _computeIsNew: function (isNew) {
+        if (isNew === undefined) {
+          return true;
+        }
+        else {
+          return !!isNew;
+        }
       },
 
       reload: function () {
