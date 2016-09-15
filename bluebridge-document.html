@@ -117,11 +117,9 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       },
 
       reload: function () {
-        let self = this;
-
         if (!this.collection) { return; }
 
-        this.loading = true;
+        this.set('loading', true);
 
         var documentPromise = this.isNew ?
           bluebridge.create(this.collection) :
@@ -129,55 +127,43 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         return documentPromise
           .then((data) => {
-            self.loading = false;
-            self.loaded = true;
+            this.set('loading', false);
+            this.set('loaded', true);
             this.set('data', data);
           })
           .then(true);
       },
 
-      replace: function (data) {
-        for (var i in this.data) {
-          delete this.data[i];
-        }
-        for (var i in data) {
-          this.data[i] = data[i];
-        }
-        return Promise.resolve(this.data);
-      },
+      save: function (extraData) {
 
-      save: function () {
-        let self = this;
-
-        this.saving = true;
-        this.saved = false;
+        this.set('saving', true);
+        this.set('saved', false);
 
         return this.validate()
-          .then(() => bluebridge.save(self.collection, self.docId, self.data))
+          .then(() => bluebridge.save(this.collection, this.docId, Object.assign({}, extraData, this.data)))
           .then(data => {
-            self.saving = false;
-            self.saved = true;
-            self.docId = data._id;
+            this.set('saving', false);
+            this.set('saved', true);
+            this.set('docId', data._id);
             this.set('data', data);
             return this.data;
           });
       },
 
       validate: function () {
-        let self = this;
-        this.validating = true;
+        this.set('validating', true);
         return bluebridge.validate(this.collection, this.docId, this.data)
-          .then(function (errors) {
-            self.validating = false;
+          .then((errors) => {
+            this.set('validating', false);
             if (errors) {
-              self.valid = false;
-              self.invalid = true;
-              self.errors = errors;
+              this.set('valid', false);
+              this.set('invalid', true);
+              this.set('errors', errors);
               return Promise.reject(errors);
             } else {
-              self.valid = true;
-              self.invalid = false;
-              self.errors = [];
+              this.set('valid', true);
+              this.set('invalid', false);
+              this.set('errors', []);
               return Promise.resolve();
             }
           });

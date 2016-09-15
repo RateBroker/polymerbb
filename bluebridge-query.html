@@ -50,12 +50,12 @@ Fetches an array of document ids from the BlueBridge instance
         if (!this.collection) {
           return;
         }
-        this.loading = true;
-        this.loaded = false;
+        this.set('loading', true);
+        this.set('loaded', false);
         bluebridge.query(this.collection, this.query)
           .then((results) => {
-            this.loading = false;
-            this.loaded = true;
+            this.set('loading', false);
+            this.set('loaded', true);
             this.set('results', results);
           });
       },
