@@ -98,6 +98,8 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         }
       },
       _dataChanged: function (data) {
+        this.fire('updated');
+
         if (this.autoSave) {
           return this.save();
         }
