@@ -23,36 +23,37 @@ e.g.
         },
         firebaseStatusKnown: {
           type: Boolean,
-          observer: 'firebaseStatusKnownChanged',
+          observer: '_firebaseStatusKnownChanged',
         },
         firebaseUser: {
           type: Object,
-          observer: 'firebaseUserChanged',
+          observer: '_firebaseUserChanged',
         },
         firebaseToken: {
           type: String,
-          observer: 'firebaseTokenChanged',
+          observer: '_firebaseTokenChanged',
         },
         app: {
           type: Object,
-          computed: 'initializeBlueBridge(endpoint)',
+          computed: '_initializeBlueBridge(endpoint)'
         },
         bluebridgeStatusKnown: {
           type: Boolean,
           value: false,
           notify: true,
+          computed: ''
         }
       },
 
-      firebaseStatusKnownChanged: function (statusKnown) {
-        this.getFirebaseToken();
+      _firebaseStatusKnownChanged: function (statusKnown) {
+        this._getFirebaseToken();
       },
 
-      firebaseUserChanged: function (user) {
-        this.getFirebaseToken();
+      _firebaseUserChanged: function (user) {
+        this._getFirebaseToken();
       },
 
-      firebaseTokenChanged: function (firebaseToken) {
+      _firebaseTokenChanged: function (firebaseToken) {
         if (!bluebridge) {
           return;
         }
@@ -60,12 +61,12 @@ e.g.
         // bluebridge.once('authed', function )
       },
 
-      initializeBlueBridge: function (endpoint) {
+      _initializeBlueBridge: function (endpoint) {
         bluebridge.initialize({ endpoint: endpoint });
         return bluebridge;
       },
 
-      getFirebaseToken: function () {
+      _getFirebaseToken: function () {
         if (!this.firebaseStatusKnown) {
           return;
         }
@@ -73,11 +74,9 @@ e.g.
         if (!firebase.auth().currentUser) {
           this.firebaseToken = null;
           this.set('bluebridgeStatusKnown', false);
-          console.log('signing in anonymously')
           firebase.auth()
             .signInAnonymously()
             .then(user => {
-              console.log(user);
             });
           return;
         }

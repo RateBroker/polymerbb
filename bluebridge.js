@@ -1,28 +1,36 @@
 'use strict';
 
 const rpcClient = require('socket.io-rpc-client');
+const EventEmitter = require('event-emitter-es6');
 
 /**
  * Provides client side bindings to serverside bluebridge RPC methods
  */
-class BlueBridge {
+class BlueBridge extends EventEmitter {
 
-  constructor () { }
+  constructor () {
+    super();
+    this.ready = false;
+  }
 
   auth (type, opts) {
     return this.rpc('auth.' + type)(opts);
-  }
-
-  query (collection, qry) {
-    return this.rpc(collection + '.query')(qry);
   }
 
   create(collection) {
     return this.rpc(collection + '.create')()
   }
 
-  document (collection, documentId) {
-    return this.rpc(collection + '.document')(documentId)
+  find (collection, query) {
+    return this.rpc(collection + '.find')(query);
+  }
+
+  findById (collection, id) {
+    return this.rpc(collection + '.findById')(id)
+  }
+
+  findOne (collection, query) {
+    return this.rpc(collection + '.findOne')(query)
   }
 
   save (collection, documentId, data) {
@@ -42,7 +50,12 @@ class BlueBridge {
   }
 
   initialize (data) {
+    this.ready = false;
     this.rpc = rpcClient(data.endpoint, data.authToken);
+    this.rpc.socket.once('auth', () => {
+      this.ready = true;
+      this.emit('ready');
+    });
   }
 }
 

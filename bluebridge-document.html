@@ -21,6 +21,9 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           observer: '_idChanged',
           reflectToAttribute: true,
         },
+        query: {
+          type: Object
+        },
         data: {
           type: Object,
           notify: true,
@@ -71,10 +74,6 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           value: false,
           reflectToAttribute: true,
         },
-        isNew: {
-          type: Boolean,
-          computed: '_computeIsNew(this.docId)'
-        },
       },
 
       ready: function () {
@@ -110,18 +109,38 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         return Promise.resolve();
       },
-      _computeIsNew: function (docId) {
-        return !docId;
+      isNew: function () {
+        return !this.docId || !this.query;
       },
 
       reload: function () {
-        if (!this.collection) { return; }
+        if (!this.collection) {
+          return;
+        }
+
+        if (!bluebridge.ready) {
+          bluebridge.once('ready', this.reload.bind(this));
+          return;
+        }
 
         this.set('loading', true);
 
-        var documentPromise = this._computeIsNew(this.docId) ?
-          bluebridge.create(this.collection) :
-          bluebridge.document(this.collection, this.docId);
+        var isNew = this.isNew();
+        var documentPromise;
+
+        if (isNew) {
+          documentPromise = bluebridge.create(this.collection);
+        }
+        else if (this.docId) {
+          documentPromise = bluebridge.findById(this.collection, this.docId);
+        }
+        else if (this.query) {
+          documentPromise = bluebridge.findOne(this.collection, this.query);
+        }
+        else {
+          console.warn("Don't know what how fetch with this bluebridge-document");
+          return;
+        }
 
         return documentPromise
           .then(data => {
@@ -130,8 +149,8 @@ Fetches a document from the BlueBridge instance, receives update and remove even
             this.set('data', data);
           })
           .catch(err => {
-            debugger;
             console.error(err);
+            console.error(this.docId);
           });
       },
 

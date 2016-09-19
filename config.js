@@ -17,6 +17,7 @@ System.config({
     "babel": "npm:babel-core@5.8.38",
     "babel-runtime": "npm:babel-runtime@5.8.38",
     "core-js": "npm:core-js@1.2.7",
+    "event-emitter-es6": "npm:event-emitter-es6@1.1.5",
     "socket.io-rpc-client": "github:capaj/socket.io-rpc-client@1.1.3",
     "github:capaj/socket.io-rpc-client@1.1.3": {
       "debug": "npm:debug@2.2.0",
@@ -74,6 +75,9 @@ System.config({
     },
     "npm:debug@2.2.0": {
       "ms": "npm:ms@0.7.1"
+    },
+    "npm:event-emitter-es6@1.1.5": {
+      "path": "github:jspm/nodelibs-path@0.1.0"
     },
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
