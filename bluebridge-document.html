@@ -126,12 +126,15 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           bluebridge.document(this.collection, this.docId);
 
         return documentPromise
-          .then((data) => {
+          .then(data => {
             this.set('loading', false);
             this.set('loaded', true);
             this.set('data', data);
           })
-          .then(true);
+          .catch(err => {
+            debugger;
+            console.error(err);
+          });
       },
 
       save: function (extraData) {

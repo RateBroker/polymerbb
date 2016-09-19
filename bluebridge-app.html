@@ -6,7 +6,7 @@ e.g.
 
     <bluebridge-app
       endpoint="http://localhost:8173"
-      app="{{bluebridge}}"></bluebridge>
+      app="{{bluebridge}}"></bluebridge-app>
 -->
 <dom-module id="bluebridge-app">
   <template>
@@ -22,28 +22,26 @@ e.g.
           type: String
         },
         firebaseStatusKnown: {
-          type: Object,
-          notify: true,
+          type: Boolean,
           observer: 'firebaseStatusKnownChanged',
         },
         firebaseUser: {
           type: Object,
-          notify: true,
           observer: 'firebaseUserChanged',
-        },
-        bluebridgeApp: {
-          type: Object,
-          computed: 'initializeBlueBridgeApp(endpoint)',
         },
         firebaseToken: {
           type: String,
           observer: 'firebaseTokenChanged',
         },
-      },
-
-      ready: function () {
-        // this.firebaseApp = document.getElementById('firebaseApp');
-        // console.log(this);
+        app: {
+          type: Object,
+          computed: 'initializeBlueBridge(endpoint)',
+        },
+        bluebridgeStatusKnown: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        }
       },
 
       firebaseStatusKnownChanged: function (statusKnown) {
@@ -59,13 +57,10 @@ e.g.
           return;
         }
         bluebridge.auth('firebase', firebaseToken);
+        // bluebridge.once('authed', function )
       },
 
-      handleResponse: function (res){
-        console.log(res);
-      },
-
-      initializeBlueBridgeApp: function (endpoint) {
+      initializeBlueBridge: function (endpoint) {
         bluebridge.initialize({ endpoint: endpoint });
         return bluebridge;
       },
@@ -77,6 +72,13 @@ e.g.
 
         if (!firebase.auth().currentUser) {
           this.firebaseToken = null;
+          this.set('bluebridgeStatusKnown', false);
+          console.log('signing in anonymously')
+          firebase.auth()
+            .signInAnonymously()
+            .then(user => {
+              console.log(user);
+            });
           return;
         }
 
@@ -84,11 +86,8 @@ e.g.
           .getToken(true)
           .then((token) => {
             this.firebaseToken = token;
+            this.set('bluebridgeStatusKnown', true);
           });
-      },
-
-      computeAuthEndpoint: function (endpoint) {
-        return endpoint + '/auth/firebase_token';
       },
 
     });
