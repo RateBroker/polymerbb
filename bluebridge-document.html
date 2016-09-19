@@ -13,7 +13,6 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       properties: {
         collection: {
           type: String,
-          observer: '_collectionChanged',
         },
         docId: {
           type: String,
@@ -82,10 +81,6 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         bluebridge.rpc.socket.on('deauth',      this.reload.bind(this));
         bluebridge.rpc.socket.on('disconnect',  this.reload.bind(this));
       },
-
-      _collectionChanged: function (collection) {
-        this.reload();
-      },
       _idChanged: function (docId, oldDocId) {
         if (!this.data) {
           this.reload();
@@ -110,7 +105,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         return Promise.resolve();
       },
       isNew: function () {
-        return !this.docId || !this.query;
+        return !this.docId && !this.query;
       },
 
       reload: function () {
