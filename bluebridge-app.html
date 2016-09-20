@@ -32,7 +32,8 @@ e.g.
         },
         app: {
           type: Object,
-          computed: '_init(endpoint, firebaseStatusKnown)'
+          computed: '_init(endpoint, firebaseStatusKnown)',
+          observer: '_bluebridgeChanged'
         }
       },
 
@@ -47,8 +48,13 @@ e.g.
         bluebridge.on('unready', () => {
           this.bluebridgeStatusKnown = true;
         });
-        this._getFirebaseToken();
         return bluebridge;
+      },
+
+      _bluebridgeChanged: function (bluebridge) {
+        if (bluebridge) {
+          this._getFirebaseToken();
+        }
       },
 
       _getFirebaseToken: function () {
