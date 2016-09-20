@@ -6409,6 +6409,7 @@ $__System.registerDynamic('1', ['19', '1b'], true, function ($__require, exports
     constructor() {
       super();
       this.ready = false;
+      this.emit('unready');
     }
 
     auth(type, opts) {
@@ -6449,6 +6450,7 @@ $__System.registerDynamic('1', ['19', '1b'], true, function ($__require, exports
 
     initialize(data) {
       this.ready = false;
+      this.emit('unready');
       this.rpc = rpcClient(data.endpoint, data.authToken);
       this.rpc.socket.once('auth', () => {
         this.ready = true;
