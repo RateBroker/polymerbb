@@ -11,6 +11,7 @@ class BlueBridge extends EventEmitter {
   constructor () {
     super();
     this.ready = false;
+    this.emit('unready');
   }
 
   auth (type, opts) {
@@ -51,6 +52,7 @@ class BlueBridge extends EventEmitter {
 
   initialize (data) {
     this.ready = false;
+    this.emit('unready');
     this.rpc = rpcClient(data.endpoint, data.authToken);
     this.rpc.socket.once('auth', () => {
       this.ready = true;
