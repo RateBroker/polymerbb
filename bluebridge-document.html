@@ -13,6 +13,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
       properties: {
         collection: {
           type: String,
+          observer: '_collectionChanged',
         },
         docId: {
           type: String,
@@ -98,6 +99,11 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         if (docId != this.data._id) {
           this.reload();
           return;
+        }
+      },
+      _collectionChanged: function (collection, oldCollection) {
+        if (!oldCollection) {
+          this.reload();
         }
       },
       _dataChanged: function (data) {
