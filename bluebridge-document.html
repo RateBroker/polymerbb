@@ -21,6 +21,11 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           observer: '_idChanged',
           reflectToAttribute: true,
         },
+
+        createIfNotExist: {
+          type: Boolean
+        },
+        
         query: {
           type: Object
         },
@@ -140,12 +145,20 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         if (isNew) {
           documentPromise = bluebridge.create(this.collection);
-        }
-        else if (this.docId) {
+        } else if (this.docId) {
           documentPromise = bluebridge.findById(this.collection, this.docId);
-        }
-        else if (this.query) {
-          documentPromise = bluebridge.findOne(this.collection, this.query);
+        } else if (this.query) {
+          documentPromise = bluebridge.findOne(this.collection, this.query).catch(err => {
+            if (this.ensureExists) {
+              return bluebridge.create(this.collection, this.query);
+            }
+
+            /** 
+             * Document not found, let's error as per normal until we better define what to
+             * do in this case 
+             */
+            return Promise.reject(err);
+          });
         }
         else {
           console.warn("Don't know what how fetch with this bluebridge-document");

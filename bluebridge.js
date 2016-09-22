@@ -18,8 +18,8 @@ class BlueBridge extends EventEmitter {
     return this.rpc('auth.' + type)(opts);
   }
 
-  create(collection) {
-    return this.rpc(collection + '.create')()
+  create(collection, data = {}) {
+    return this.rpc(collection + '.create')(data)
   }
 
   find (collection, query) {
