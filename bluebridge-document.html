@@ -25,7 +25,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         ensureExists: {
           type: Boolean
         },
-        
+
         query: {
           type: Object
         },
@@ -79,6 +79,14 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           value: false,
           reflectToAttribute: true,
         },
+      },
+
+      observers: [
+        'queryChanged(query.*)'
+      ],
+
+      queryChanged: function (query) {
+        this.reload();
       },
 
       ready: function () {
@@ -153,9 +161,9 @@ Fetches a document from the BlueBridge instance, receives update and remove even
               return bluebridge.create(this.collection, this.query);
             }
 
-            /** 
+            /**
              * Document not found, let's error as per normal until we better define what to
-             * do in this case 
+             * do in this case
              */
             return Promise.reject(err);
           });
