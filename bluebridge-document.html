@@ -19,11 +19,16 @@ Fetches a document from the BlueBridge instance, receives update and remove even
           type: String,
           value: null,
           observer: '_idChanged',
+          notify: true,
           reflectToAttribute: true,
         },
 
         ensureExists: {
           type: Boolean
+        },
+        defaults: {
+          type: Object
+          value: {}
         },
 
         query: {
@@ -132,9 +137,6 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         return Promise.resolve();
       },
-      isNew: function () {
-        return !this.docId && !this.query;
-      },
 
       reload: function () {
         if (!this.collection) {
@@ -148,36 +150,31 @@ Fetches a document from the BlueBridge instance, receives update and remove even
 
         this.set('loading', true);
 
-        var isNew = this.isNew();
         var documentPromise;
 
-        if (isNew) {
-          documentPromise = bluebridge.create(this.collection);
-        } else if (this.docId) {
+        if (this.docId) {
           documentPromise = bluebridge.findById(this.collection, this.docId);
         } else if (this.query) {
-          documentPromise = bluebridge.findOne(this.collection, this.query).catch(err => {
-            if (this.ensureExists) {
-              return bluebridge.create(this.collection, this.query);
-            }
-
-            /**
-             * Document not found, let's error as per normal until we better define what to
-             * do in this case
-             */
-            return Promise.reject(err);
-          });
-        }
-        else {
-          console.warn("Don't know what how fetch with this bluebridge-document");
-          return;
+          documentPromise = bluebridge.findOne(this.collection, this.query);
+        } else {
+          if (this.docId === undefined && this.query === undefined) {
+            console.warn('doc-id and query attributes are both undefined');
+          }
+          documentPromise = Promise.resolve(null);
         }
 
         return documentPromise
-          .then(data => {
+          .then(doc => {
+            if (!doc && this.ensureExists) {
+              return bluebridge.create(this.collection, this.defaults);
+            }
+            return Promise.resolve(doc);
+          })
+          .then(doc => {
+            this.set('notFound', !!doc);
             this.set('loading', false);
             this.set('loaded', true);
-            this.set('data', data);
+            this.set('data', doc);
           })
           .catch(err => {
             console.error(err);
