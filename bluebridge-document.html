@@ -26,7 +26,7 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         ensureExists: {
           type: Boolean
         },
-        
+
         defaults: {
           type: Object,
           value: {}
@@ -158,9 +158,10 @@ Fetches a document from the BlueBridge instance, receives update and remove even
         } else if (this.query) {
           documentPromise = bluebridge.findOne(this.collection, this.query);
         } else {
-          if (this.docId === undefined && this.query === undefined) {
+          if (this.ensureExists && this.docId === undefined && this.query === undefined) {
             console.warn('doc-id and query attributes are both undefined');
           }
+          
           documentPromise = Promise.resolve(null);
         }
 
