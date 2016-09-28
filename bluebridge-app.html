@@ -1,0 +1,36 @@
+<link rel="import" href="../polymerfire/polymerfire.html">
+
+<!--
+<bluebridge-app> connects to a BlueBridge instance which provides helper methods to other BlueBridge components
+
+e.g.
+
+    <bluebridge-app
+      endpoint="http://localhost:8173"
+      app="{{bluebridge}}"></bluebridge-app>
+-->
+<dom-module id="bluebridge-app">
+  <template>
+
+    <!-- <template is="dom-if" if="firebaseAuth"> -->
+      <firebase-app id="firebase-app" auth-domain="[[firebaseAuthDomain]]" database-url="[[firebaseDatabaseUrl]]" api-key="[[firebaseApiKey]]"></firebase-app>
+      <firebase-auth id="firebase-auth" user="{{firebaseUser}}" status-known="{{firebaseStatusKnown}}"></firebase-auth>
+    <!-- </template> -->
+
+    <bluebridge-document
+      id="userDocument"
+
+      collection="User"
+      query="[[userQuery]]"
+
+      doc-id="{{userId}}"
+      data="{{bluebridgeUser}}"
+
+      ensure-exists
+      defaults="[[userQuery]]"
+    ></bluebridge-document>
+
+  </template>
+
+  <script src="./bluebridge-app.js"></script>
+</dom-module>
