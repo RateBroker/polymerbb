@@ -37,15 +37,26 @@ Polymer({
         userId: {
             type: String
         },
+
         bluebridgeUser: {
             type: Object,
             notify: true
-        }
+        },
+        // bluebridgeUserDocument: {
+        //   type: Object,
+        //   value: function () {
+        //     return this.$.userDocument
+        //   }
+        // }
     },
 
     observers: [
       '_firebaseUidChanged(firebaseUser.uid)'
     ],
+
+    saveUser: function () {
+      return this.$.userDocument.save();
+    },
 
     _init: function (endpoint) {
         bluebridge.initialize({ endpoint: endpoint });
@@ -56,16 +67,20 @@ Polymer({
     },
 
     _firebaseUidChanged: function (uid) {
-      if (!firebase.auth().currentUser) {
-          this.firebaseToken = null;
-          return;
+      if (uid !== undefined && !uid) {
+        firebase.auth().signInAnonymously();
+        return;
       }
 
-      firebase.auth().currentUser
-          .getToken(true)
-          .then((token) => {
-              this.firebaseToken = token;
-          });
+      if (firebase.auth().currentUser) {
+        firebase.auth().currentUser
+            .getToken(true)
+            .then((token) => {
+                this.firebaseToken = token;
+            });
+      } else {
+        this.firebaseToken = null;
+      }
     },
 
     _firebaseTokenChanged: function (firebaseToken) {
@@ -73,8 +88,9 @@ Polymer({
     },
 
     _computeUserQuery: function (uid) {
+      console.log('computing user query for uid: ', uid);
       if (!uid) {
-          return null;
+          return undefined;
       }
       return { uid: uid };
     }
