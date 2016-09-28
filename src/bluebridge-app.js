@@ -5,8 +5,17 @@ Polymer({
 
     properties: {
         endpoint: String,
+
+        firebaseAuth: Boolean,
+        firebaseAuthDomain: String,
+        firebaseDatabaseUrl: String,
+        firebaseApiKey: String,
+
         firebaseStatusKnown: Boolean,
-        firebaseUser: Object,
+        firebaseUser: {
+          type: Object,
+          notify: true
+        },
         firebaseToken: {
             type: String,
             observer: '_firebaseTokenChanged'
@@ -18,47 +27,56 @@ Polymer({
         },
         app: {
             type: Object,
-            computed: '_init(endpoint, firebaseStatusKnown)',
-            observer: '_bluebridgeChanged'
+            computed: '_init(endpoint)',
+        },
+
+        userQuery: {
+            type: Object,
+            computed: '_computeUserQuery(firebaseUser.uid)'
+        },
+        userId: {
+            type: String
+        },
+        bluebridgeUser: {
+            type: Object,
+            notify: true
         }
     },
 
-    _init: function (endpoint, firebaseStatusKnown) {
-        if (!endpoint || !firebaseStatusKnown) {
-            return null;
-        }
+    observers: [
+      '_firebaseUidChanged(firebaseUser.uid)'
+    ],
+
+    _init: function (endpoint) {
         bluebridge.initialize({ endpoint: endpoint });
         bluebridge.on('ready', () => {
-            this.bluebridgeStatusKnown = true;
-        });
-        bluebridge.on('unready', () => {
-            this.bluebridgeStatusKnown = true;
+          this.set('bluebridgeStatusKnown', true);
         });
         return bluebridge;
     },
 
-    _bluebridgeChanged: function (bluebridge) {
-        if (bluebridge) {
-            this._getFirebaseToken();
-        }
-    },
+    _firebaseUidChanged: function (uid) {
+      if (!firebase.auth().currentUser) {
+          this.firebaseToken = null;
+          return;
+      }
 
-    _getFirebaseToken: function () {
-        if (!firebase.auth().currentUser) {
-            this.firebaseToken = null;
-            firebase.auth().signInAnonymously();
-            return;
-        }
-
-        firebase.auth().currentUser
-            .getToken(true)
-            .then((token) => {
-                this.firebaseToken = token;
-            });
+      firebase.auth().currentUser
+          .getToken(true)
+          .then((token) => {
+              this.firebaseToken = token;
+          });
     },
 
     _firebaseTokenChanged: function (firebaseToken) {
-        this.app.auth('firebase', firebaseToken);
+        bluebridge.auth('firebase', firebaseToken);
+    },
+
+    _computeUserQuery: function (uid) {
+      if (!uid) {
+          return null;
+      }
+      return { uid: uid };
     }
 
 });
