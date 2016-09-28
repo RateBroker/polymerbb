@@ -19,13 +19,14 @@
     "gulp-if": "^2.0.1",
     "gulp-replace": "^0.5.4",
     "gulp-util": "^3.0.7",
-    "jspm": "^0.16.45"
+    "jspm": "^0.16.45",
+    "merge-stream": "^1.0.0",
+    "run-sequence": "^1.2.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "transpile-core": "babel bluebridge.js --out-file bluebridge-compiled.js",
-    "transpile-elements": "gulp elements",
-    "postinstall": "npm run transpile-elements && npm run transpile-core && npm run jspm-install && npm run jspm-bundle",
+    "postinstall": "npm run transpile-core && npm run jspm-install && npm run jspm-bundle && gulp",
     "jspm-bundle": "jspm bundle-sfx bluebridge-compiled.js ./dist/bluebridge-bundled.js",
     "jspm-install": "jspm install"
   },
