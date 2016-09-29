@@ -12,7 +12,11 @@ Polymer({
         firebaseDatabaseUrl: String,
         firebaseApiKey: String,
 
-        firebaseStatusKnown: Boolean,
+        firebaseStatusKnown: {
+            type: Boolean,
+            observer: '_firebaseStatusKnownChanged'
+        },
+
         firebaseUser: {
             type: Object,
             notify: true
@@ -75,20 +79,35 @@ Polymer({
         });
     },
 
+    _firebaseStatusKnownChanged: function _firebaseStatusKnownChanged(newStatus) {
+        if (newStatus) {
+            console.log('[bluebridge-app] Firebase is ready for action');
+
+            var currentUser = firebase.auth().currentUser;
+
+            if (currentUser) {
+                this._setInternalFirebaseToken(currentUser);
+            }
+        }
+    },
+
     _firebaseUidChanged: function _firebaseUidChanged(uid) {
         var promise = null;
 
-        if (uid === undefined || !uid) {
-            promise = firebase.auth().signInAnonymously()
-            //.then(this._setInternalFirebaseToken.bind(this))
-            .catch(function (err) {
-                return Promise.reject('Failed to sign in anonymously ' + err);
-            });
-        } else {
-            promise = this._setInternalFirebaseToken(firebase.auth().currentUser);
+        // No point checking uid if firebase isn't even available
+        // for us to check
+        if (!this.firebaseStatusKnown) {
+            console.warn('[bluebridge-app] Firebase not ready when UID changed');
+            return;
         }
 
-        promise.then(function (user) {
+        if (uid === undefined || !uid) {
+            // Anonymous sign-in will kick off a uid change, so we will
+            // do nothing and that will retrigger this process
+            return firebase.auth().signInAnonymously();
+        }
+
+        return this._setInternalFirebaseToken(firebase.auth().currentUser).then(function (user) {
             return console.log('[bluebridge-app] Successfully set firebase token', user);
         }).catch(function (err) {
             return console.error('[bluebridge-app] Could not assign firebase token', err);
