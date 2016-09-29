@@ -95,8 +95,6 @@ Polymer({
     },
 
     _firebaseUidChanged: function (uid) {
-      let promise = null
-      
       // No point checking uid if firebase isn't even available
       // for us to check
       if (!this.firebaseStatusKnown) {
