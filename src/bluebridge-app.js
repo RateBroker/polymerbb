@@ -66,21 +66,31 @@ Polymer({
         return bluebridge;
     },
 
+    _setInternalFirebaseToken: function (user) {
+        if (!user) {
+            this.firebaseToken = null;
+            return Promise.reject('No user specified to set internal token with');
+        }
+
+        return user.getToken(true).then(token => {
+            this.firebaseToken = token;
+            return Promise.resolve(user);
+        });
+    },
+
     _firebaseUidChanged: function (uid) {
-      if (uid !== undefined && !uid) {
-        firebase.auth().signInAnonymously();
-        return;
+      let promise = null
+      
+      if (uid === undefined || !uid) {
+          promise = firebase.auth().signInAnonymously()
+            .catch(err => Promise.reject(`Failed to sign in anonymously ${err}`));
+      } else {
+          promise = this._setInternalFirebaseToken(firebase.auth().currentUser);
       }
 
-      if (firebase.auth().currentUser) {
-        firebase.auth().currentUser
-            .getToken(true)
-            .then((token) => {
-                this.firebaseToken = token;
-            });
-      } else {
-        this.firebaseToken = null;
-      }
+      promise
+        .then(user => console.log('[bluebridge-app] Successfully set firebase token', user))
+        .catch(err => console.error('[bluebridge-app] Could not assign firebase token', err));
     },
 
     _firebaseTokenChanged: function (firebaseToken) {
