@@ -47,6 +47,7 @@ Polymer({
             type: Object,
             notify: true
         }
+
     },
 
     observers: ['_firebaseUidChanged(firebaseUser.uid)'],
@@ -55,18 +56,61 @@ Polymer({
         return this.$.userDocument.save();
     },
 
-    _init: function _init(endpoint) {
+    _setDisplayName: function _setDisplayName(user, userData) {
+        return user.updateProfile({ displayName: userData.first_name + ' ' + userData.last_name }).then(function () {
+            return Promise.resolve(user);
+        });
+    },
+
+    _sendVerificationEmail: function _sendVerificationEmail(user) {
+        return user.sendEmailVerification().then(function () {
+            return Promise.resolve(user);
+        });
+    },
+
+    _createNewUser: function _createNewUser(newUser) {
+        var auth = firebase.auth();
+        var currentUser = auth.currentUser;
+
+        var migrate = this.$.userDocument.method('migrate');
+
+        return currentUser.getToken(true).then(function (sourceUserToken) {
+            return auth.createUserWithEmailAndPassword(newUser.email, newUser.password).then(function (user) {
+                return user.getToken(true).then(function (newUserToken) {
+                    return migrate(newUserToken, sourceUserToken);
+                }).then(function () {
+                    return Promise.resolve(user);
+                });
+            });
+        });
+    },
+
+    registerUser: function registerUser(password) {
         var _this = this;
+
+        var userData = Object.assign({}, this.$.userDocument.data);
+
+        return this.$.userDocument.save().then(function () {
+            return _this._createNewUser({ email: userData.email, password: password });
+        }).then(function (user) {
+            return _this._setDisplayName(user, userData);
+        }).then(function (user) {
+            return _this._sendVerificationEmail(user);
+        });
+    },
+
+    _init: function _init(endpoint) {
+        var _this2 = this;
 
         bluebridge.initialize({ endpoint: endpoint });
         bluebridge.on('ready', function () {
-            _this.set('bluebridgeStatusKnown', true);
+            _this2.set('bluebridgeStatusKnown', true);
         });
         return bluebridge;
     },
 
     _setInternalFirebaseToken: function _setInternalFirebaseToken(user) {
-        var _this2 = this;
+        var _this3 = this;
 
         if (!user) {
             this.firebaseToken = null;
@@ -74,7 +118,7 @@ Polymer({
         }
 
         return user.getToken(true).then(function (token) {
-            _this2.firebaseToken = token;
+            _this3.firebaseToken = token;
             return Promise.resolve(user);
         });
     },
@@ -87,13 +131,13 @@ Polymer({
 
             if (currentUser) {
                 this._setInternalFirebaseToken(currentUser);
+            } else {
+                firebase.auth().signInAnonymously();
             }
         }
     },
 
     _firebaseUidChanged: function _firebaseUidChanged(uid) {
-        var promise = null;
-
         // No point checking uid if firebase isn't even available
         // for us to check
         if (!this.firebaseStatusKnown) {
@@ -101,11 +145,16 @@ Polymer({
             return;
         }
 
-        if (uid === undefined || !uid) {
-            // Anonymous sign-in will kick off a uid change, so we will
-            // do nothing and that will retrigger this process
-            return firebase.auth().signInAnonymously();
+        if (!uid) {
+            console.warn('[bluebridge-app] Changed to having no uid');
+            return;
         }
+
+        //   if (uid === undefined || !uid) {
+        //      // Anonymous sign-in will kick off a uid change, so we will
+        //      // do nothing and that will retrigger this process
+        //      return firebase.auth().signInAnonymously();
+        //   }
 
         return this._setInternalFirebaseToken(firebase.auth().currentUser).then(function (user) {
             return console.log('[bluebridge-app] Successfully set firebase token', user);

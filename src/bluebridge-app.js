@@ -46,6 +46,7 @@ Polymer({
             type: Object,
             notify: true
         },
+
         // bluebridgeUserDocument: {
         //   type: Object,
         //   value: function () {
@@ -62,6 +63,42 @@ Polymer({
       return this.$.userDocument.save();
     },
 
+    _setDisplayName: function (user, userData) {
+        return user
+            .updateProfile({ displayName: `${userData.first_name} ${userData.last_name}` })
+            .then(() => Promise.resolve(user));
+    },
+
+    _sendVerificationEmail: function (user) {
+        return user.sendEmailVerification().then(() => Promise.resolve(user));
+    },
+
+    _createNewUser: function (newUser) {
+        let auth = firebase.auth();
+        let currentUser = auth.currentUser;
+
+        let migrate = this.$.userDocument.method('migrate');
+        
+        return currentUser.getToken(true)
+        .then(sourceUserToken => {
+            return auth.createUserWithEmailAndPassword(newUser.email, newUser.password)
+            .then((user) => {
+                return user.getToken(true)
+                .then(newUserToken => migrate(newUserToken, sourceUserToken))
+                .then(() => Promise.resolve(user));
+            });
+        });
+    },
+
+    registerUser: function (password) {
+        let userData = Object.assign({}, this.$.userDocument.data);
+
+        return this.$.userDocument.save()
+            .then(() => this._createNewUser({ email: userData.email, password: password }))
+            .then((user) => this._setDisplayName(user, userData))
+            .then((user) => this._sendVerificationEmail(user));
+    },
+    
     _init: function (endpoint) {
         bluebridge.initialize({ endpoint: endpoint });
         bluebridge.on('ready', () => {
@@ -90,6 +127,8 @@ Polymer({
 
             if (currentUser) {
                 this._setInternalFirebaseToken(currentUser);
+            } else {
+                firebase.auth().signInAnonymously();
             }
         }
     },
@@ -102,11 +141,16 @@ Polymer({
           return;
       }
 
-      if (uid === undefined || !uid) {
-         // Anonymous sign-in will kick off a uid change, so we will
-         // do nothing and that will retrigger this process
-         return firebase.auth().signInAnonymously();
+      if (!uid) {
+          console.warn('[bluebridge-app] Changed to having no uid');
+          return;
       }
+
+    //   if (uid === undefined || !uid) {
+    //      // Anonymous sign-in will kick off a uid change, so we will
+    //      // do nothing and that will retrigger this process
+    //      return firebase.auth().signInAnonymously();
+    //   }
 
       return this._setInternalFirebaseToken(firebase.auth().currentUser)
         .then(user => console.log('[bluebridge-app] Successfully set firebase token', user))
